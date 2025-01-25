@@ -63,7 +63,7 @@ namespace TEngine
                     Log.Warning($"Could not load subScene while already loaded. Scene: {location}");
                     return subScene;
                 }
-                subScene = YooAssets.LoadSceneAsync(location, sceneMode, suspendLoad, (uint)priority);
+                subScene = YooAssets.LoadSceneAsync(location, sceneMode, LocalPhysicsMode.None,suspendLoad, (uint)priority);
 
                 if (callBack != null)
                 {
@@ -88,7 +88,7 @@ namespace TEngine
                 
                 _currentMainSceneName = location;
                 
-                _currentMainScene = YooAssets.LoadSceneAsync(location, sceneMode, suspendLoad, (uint)priority);
+                _currentMainScene = YooAssets.LoadSceneAsync(location, sceneMode, LocalPhysicsMode.None, suspendLoad, (uint)priority);
 
                 if (callBack != null)
                 {
@@ -164,30 +164,6 @@ namespace TEngine
             if (subScene != null)
             {
                 return subScene.UnSuspend();
-            }
-            Log.Warning($"IsMainScene invalid location:{location}");
-            return false;
-        }
-        
-        /// <summary>
-        /// 是否为主场景。
-        /// </summary>
-        /// <param name="location">场景资源定位地址。</param>
-        /// <returns>是否主场景。</returns>
-        public bool IsMainScene(string location)
-        {
-            if (_currentMainSceneName.Equals(location))
-            {
-                if (_currentMainScene != null)
-                {
-                    return _currentMainScene.IsMainScene();
-                }
-                return true;
-            }
-            _subScenes.TryGetValue(location, out SceneHandle subScene);
-            if (subScene != null)
-            {
-                return subScene.IsMainScene();
             }
             Log.Warning($"IsMainScene invalid location:{location}");
             return false;

@@ -27,11 +27,6 @@ namespace TEngine
         EPlayMode PlayMode { get; set; }
 
         /// <summary>
-        /// 缓存系统启动时的验证级别。
-        /// </summary>
-        EVerifyLevel VerifyLevel { get; set; }
-
-        /// <summary>
         /// 同时下载的最大数目。
         /// </summary>
         int DownloadingMaxNum { get; set; }

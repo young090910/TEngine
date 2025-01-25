@@ -30,11 +30,6 @@ namespace TEngine
         public EPlayMode PlayMode { get; set; }
 
         /// <summary>
-        /// 下载文件校验等级。
-        /// </summary>
-        public EVerifyLevel VerifyLevel { get; set; }
-
-        /// <summary>
         /// 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
         /// </summary>
         public long Milliseconds { get; set; }
@@ -210,9 +205,11 @@ namespace TEngine
             InitializationOperation initializationOperation = null;
             if (playMode == EPlayMode.EditorSimulateMode)
             {
+                var buildResult = EditorSimulateModeHelper.SimulateBuild(packageName);
+                var packageRoot = buildResult.PackageRootDirectory;
                 var createParameters = new EditorSimulateModeParameters();
-                createParameters.CacheBootVerifyLevel = VerifyLevel;
-                createParameters.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, packageName);
+                createParameters.EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
+                createParameters.EditorFileSystemParameters.AddParameter(FileSystemParametersDefine.DECRYPTION_SERVICES,new FileOffsetEncryption());
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 
@@ -220,8 +217,7 @@ namespace TEngine
             if (playMode == EPlayMode.OfflinePlayMode)
             {
                 var createParameters = new OfflinePlayModeParameters();
-                createParameters.CacheBootVerifyLevel = VerifyLevel;
-                createParameters.DecryptionServices = new FileStreamDecryption();
+                createParameters.BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 
@@ -230,30 +226,29 @@ namespace TEngine
             {
                 string defaultHostServer = HostServerURL;
                 string fallbackHostServer = FallbackHostServerURL;
+                IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
                 var createParameters = new HostPlayModeParameters();
-                createParameters.CacheBootVerifyLevel = VerifyLevel;
-                createParameters.DecryptionServices = new FileStreamDecryption();
-                createParameters.BuildinQueryServices = new GameQueryServices();
-                createParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+                createParameters.BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+                createParameters.CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 
             // WebGL运行模式
             if (playMode == EPlayMode.WebPlayMode)
             {
-                string defaultHostServer = HostServerURL;
-                string fallbackHostServer = FallbackHostServerURL;
                 var createParameters = new WebPlayModeParameters();
-                createParameters.CacheBootVerifyLevel = VerifyLevel;
-                createParameters.DecryptionServices = new FileStreamDecryption();
-                createParameters.BuildinQueryServices = new GameQueryServices();
-                createParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+#if UNITY_WEBGL && WEIXINMINIGAME && !UNITY_EDITOR
+			    string defaultHostServer = GetHostServerURL();
+                string fallbackHostServer = GetHostServerURL();
+                IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+                createParameters.WebServerFileSystemParameters = WechatFileSystemCreater.CreateWechatFileSystemParameters(remoteServices);
+#else
+                createParameters.WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+#endif
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 
             await initializationOperation.ToUniTask();
-
-            Log.Info($"Init resource package version : {initializationOperation?.PackageVersion}");
 
             return initializationOperation;
         }
@@ -268,9 +263,6 @@ namespace TEngine
             m_AssetPool = null;
             _assetLoadingList.Clear();
             _assetInfoMap.Clear();
-#if !UNITY_WEBGL
-            YooAssets.Destroy();
-#endif
         }
 
         #region Public Methods
@@ -950,7 +942,7 @@ namespace TEngine
             {
                 if (package is { InitializeStatus: EOperationStatus.Succeed })
                 {
-                    package.UnloadUnusedAssets();
+                    package.UnloadUnusedAssetsAsync();
                 }
             }
         }
@@ -966,7 +958,7 @@ namespace TEngine
             {
                 if (package is { InitializeStatus: EOperationStatus.Succeed })
                 {
-                    package.ForceUnloadAllAssets();
+                    package.UnloadAllAssetsAsync();
                 }
             }
 #endif

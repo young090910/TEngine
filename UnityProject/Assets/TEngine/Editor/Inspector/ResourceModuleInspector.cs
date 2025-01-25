@@ -16,16 +16,8 @@ namespace TEngine.Editor.Inspector
             "WebPlayMode (WebGL运行模式)"
         };
 
-        private static readonly string[] _verifyLevelNames = new string[]
-        {
-            "Low (验证文件存在)",
-            "Middle (验证文件大小)",
-            "High (验证文件大小和CRC)"
-        };
-
         private SerializedProperty m_PlayMode = null;
         private SerializedProperty m_UpdatableWhilePlaying = null;
-        private SerializedProperty m_VerifyLevel = null;
         private SerializedProperty m_Milliseconds = null;
         private SerializedProperty m_ReadWritePathType = null;
         private SerializedProperty m_MinUnloadUnusedAssetsInterval = null;
@@ -39,7 +31,6 @@ namespace TEngine.Editor.Inspector
         private SerializedProperty m_FailedTryAgain = null;
         private SerializedProperty m_PackageName = null;
         private int m_ResourceModeIndex = 0;
-        private int m_VerifyIndex = 0;
 
         private int m_PackageNameIndex = 0;
         private string[] m_PackageNames;
@@ -56,8 +47,6 @@ namespace TEngine.Editor.Inspector
                 if (EditorApplication.isPlaying && IsPrefabInHierarchy(t.gameObject))
                 {
                     EditorGUILayout.EnumPopup("Resource Mode", t.PlayMode);
-
-                    EditorGUILayout.EnumPopup("VerifyLevel", t.VerifyLevel);
                 }
                 else
                 {
@@ -66,13 +55,6 @@ namespace TEngine.Editor.Inspector
                     {
                         m_ResourceModeIndex = selectedIndex;
                         m_PlayMode.enumValueIndex = selectedIndex;
-                    }
-
-                    int selectedVerifyIndex = EditorGUILayout.Popup("VerifyLevel", m_VerifyIndex, _verifyLevelNames);
-                    if (selectedVerifyIndex != m_VerifyIndex)
-                    {
-                        m_VerifyIndex = selectedVerifyIndex;
-                        m_VerifyLevel.enumValueIndex = selectedVerifyIndex;
                     }
                 }
 
@@ -244,7 +226,6 @@ namespace TEngine.Editor.Inspector
         {
             m_PlayMode = serializedObject.FindProperty("playMode");
             m_UpdatableWhilePlaying = serializedObject.FindProperty("m_UpdatableWhilePlaying");
-            m_VerifyLevel = serializedObject.FindProperty("VerifyLevel");
             m_Milliseconds = serializedObject.FindProperty("Milliseconds");
             m_ReadWritePathType = serializedObject.FindProperty("m_ReadWritePathType");
             m_MinUnloadUnusedAssetsInterval = serializedObject.FindProperty("m_MinUnloadUnusedAssetsInterval");
@@ -265,7 +246,6 @@ namespace TEngine.Editor.Inspector
         private void RefreshModes()
         {
             m_ResourceModeIndex = m_PlayMode.enumValueIndex > 0 ? m_PlayMode.enumValueIndex : 0;
-            m_VerifyIndex = m_VerifyLevel.enumValueIndex > 0 ? m_VerifyLevel.enumValueIndex : 0;
         }
 
         private void RefreshTypeNames()

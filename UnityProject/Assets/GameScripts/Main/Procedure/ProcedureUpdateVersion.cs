@@ -24,15 +24,20 @@ namespace GameMain
 
             UILoadMgr.Show(UIDefine.UILoadUpdate, $"更新静态版本文件...");
 
-            //检查设备是否能够访问互联网
-            if (Application.internetReachability == NetworkReachability.NotReachable)
+            EPlayMode playMode = GameModule.Resource.PlayMode;
+
+            if (playMode == EPlayMode.HostPlayMode)
             {
-                Log.Warning("The device is not connected to the network");
-                UILoadMgr.Show(UIDefine.UILoadUpdate, LoadText.Instance.Label_Net_UnReachable);
-                UILoadTip.ShowMessageBox(LoadText.Instance.Label_Net_UnReachable, MessageShowType.TwoButton,
-                    LoadStyle.StyleEnum.Style_Retry,
-                    GetStaticVersion().Forget,
-                    () => { ChangeState<ProcedureInitResources>(procedureOwner); });
+                //检查设备是否能够访问互联网
+                if (Application.internetReachability == NetworkReachability.NotReachable)
+                {
+                    Log.Warning("The device is not connected to the network");
+                    UILoadMgr.Show(UIDefine.UILoadUpdate, LoadText.Instance.Label_Net_UnReachable);
+                    UILoadTip.ShowMessageBox(LoadText.Instance.Label_Net_UnReachable, MessageShowType.TwoButton,
+                        LoadStyle.StyleEnum.Style_Retry,
+                        GetStaticVersion().Forget,
+                        () => { ChangeState<ProcedureInitResources>(procedureOwner); });
+                }
             }
 
             UILoadMgr.Show(UIDefine.UILoadUpdate, LoadText.Instance.Label_RequestVersionIng);
@@ -46,7 +51,11 @@ namespace GameMain
         /// </summary>
         private async UniTaskVoid GetStaticVersion()
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+            EPlayMode playMode = GameModule.Resource.PlayMode;
+            if (playMode == EPlayMode.HostPlayMode)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+            }
 
             var operation = GameModule.Resource.UpdatePackageVersionAsync();
 
@@ -59,7 +68,15 @@ namespace GameMain
                     //线上最新版本operation.PackageVersion
                     GameModule.Resource.PackageVersion = operation.PackageVersion;
                     Log.Debug($"Updated package Version : from {GameModule.Resource.GetPackageVersion()} to {operation.PackageVersion}");
-                    ChangeState<ProcedureUpdateManifest>(_procedureOwner);
+                    
+                    if (playMode == EPlayMode.HostPlayMode || playMode == EPlayMode.WebPlayMode)
+                    {
+                        ChangeState<ProcedureUpdateManifest>(_procedureOwner);
+                    }
+                    else
+                    {
+                        ChangeState<ProcedureInitResources>(_procedureOwner);
+                    }
                 }
                 else
                 {

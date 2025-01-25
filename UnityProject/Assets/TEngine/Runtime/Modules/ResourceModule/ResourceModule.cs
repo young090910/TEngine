@@ -95,11 +95,6 @@ namespace TEngine
         /// </summary>
         public bool UpdatableWhilePlaying => m_UpdatableWhilePlaying;
 
-        /// <summary>
-        /// 下载文件校验等级。
-        /// </summary>
-        public EVerifyLevel VerifyLevel = EVerifyLevel.Middle;
-
         [SerializeField] private ReadWritePathType m_ReadWritePathType = ReadWritePathType.Unspecified;
 
         /// <summary>
@@ -297,7 +292,6 @@ namespace TEngine
 
             m_ResourceManager.DefaultPackageName = PackageName;
             m_ResourceManager.PlayMode = PlayMode;
-            m_ResourceManager.VerifyLevel = VerifyLevel;
             m_ResourceManager.Milliseconds = Milliseconds;
             m_ResourceManager.InstanceRoot = transform;
             m_ResourceManager.HostServerURL = SettingsUtils.GetResDownLoadPath();
@@ -350,29 +344,27 @@ namespace TEngine
         /// <param name="timeout">超时时间。</param>
         /// <param name="customPackageName">指定资源包的名称。不传使用默认资源包</param>
         /// <returns>请求远端包裹的最新版本操作句柄。</returns>
-        public UpdatePackageVersionOperation UpdatePackageVersionAsync(bool appendTimeTicks = false, int timeout = 60,
+        public RequestPackageVersionOperation UpdatePackageVersionAsync(bool appendTimeTicks = false, int timeout = 60,
             string customPackageName = "")
         {
             var package = string.IsNullOrEmpty(customPackageName)
                 ? YooAssets.GetPackage(PackageName)
                 : YooAssets.GetPackage(customPackageName);
-            return package.UpdatePackageVersionAsync(appendTimeTicks, timeout);
+            return package.RequestPackageVersionAsync(appendTimeTicks, timeout);
         }
 
         /// <summary>
         /// 向网络端请求并更新清单
         /// </summary>
         /// <param name="packageVersion">更新的包裹版本</param>
-        /// <param name="autoSaveVersion">更新成功后自动保存版本号，作为下次初始化的版本。</param>
         /// <param name="timeout">超时时间（默认值：60秒）</param>
         /// <param name="customPackageName">指定资源包的名称。不传使用默认资源包</param>
-        public UpdatePackageManifestOperation UpdatePackageManifestAsync(string packageVersion,
-            bool autoSaveVersion = true, int timeout = 60, string customPackageName = "")
+        public UpdatePackageManifestOperation UpdatePackageManifestAsync(string packageVersion, int timeout = 60, string customPackageName = "")
         {
             var package = string.IsNullOrEmpty(customPackageName)
                 ? YooAssets.GetPackage(PackageName)
                 : YooAssets.GetPackage(customPackageName);
-            return package.UpdatePackageManifestAsync(packageVersion, autoSaveVersion, timeout);
+            return package.UpdatePackageManifestAsync(packageVersion, timeout);
         }
         
         /// <summary>
@@ -404,12 +396,12 @@ namespace TEngine
         /// 清理包裹未使用的缓存文件。
         /// </summary>
         /// <param name="customPackageName">指定资源包的名称。不传使用默认资源包</param>
-        public ClearUnusedCacheFilesOperation ClearUnusedCacheFilesAsync(string customPackageName = "")
+        public ClearCacheFilesOperation ClearUnusedCacheFilesAsync(string customPackageName = "")
         {
             var package = string.IsNullOrEmpty(customPackageName)
                 ? YooAssets.GetPackage(PackageName)
                 : YooAssets.GetPackage(customPackageName);
-            return package.ClearUnusedCacheFilesAsync();
+            return package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
         }
 
         /// <summary>
@@ -421,7 +413,7 @@ namespace TEngine
             var package = string.IsNullOrEmpty(customPackageName)
                 ? YooAssets.GetPackage(PackageName)
                 : YooAssets.GetPackage(customPackageName);
-            package.ClearPackageSandbox();
+            package.ClearCacheFilesAsync(EFileClearMode.ClearAllBundleFiles);
         }
         #endregion
 

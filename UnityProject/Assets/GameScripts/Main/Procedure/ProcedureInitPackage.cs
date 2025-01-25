@@ -73,7 +73,8 @@ namespace GameMain
                     else if (playMode == EPlayMode.OfflinePlayMode)
                     {
                         Log.Info("Package resource mode detected.");
-                        ChangeState<ProcedureInitResources>(procedureOwner);
+                        // ChangeState<ProcedureInitResources>(procedureOwner);
+                        ChangeState<ProcedureUpdateVersion>(procedureOwner);
                     }
                     // 可更新模式。
                     else if (playMode == EPlayMode.HostPlayMode ||

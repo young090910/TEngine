@@ -44,13 +44,6 @@ namespace TEngine
         public bool UnSuspend(string location);
 
         /// <summary>
-        /// 是否为主场景。
-        /// </summary>
-        /// <param name="location">场景资源定位地址。</param>
-        /// <returns>是否主场景。</returns>
-        public bool IsMainScene(string location);
-
-        /// <summary>
         /// 异步卸载子场景。
         /// </summary>
         /// <param name="location">场景资源定位地址。</param>
