@@ -67,14 +67,13 @@ namespace GameMain
                     if (playMode == EPlayMode.EditorSimulateMode)
                     {
                         Log.Info("Editor resource mode detected.");
-                        ChangeState<ProcedurePreload>(procedureOwner);
+                        ChangeState<ProcedureInitResources>(procedureOwner);
                     }
                     // 单机模式。
                     else if (playMode == EPlayMode.OfflinePlayMode)
                     {
                         Log.Info("Package resource mode detected.");
-                        // ChangeState<ProcedureInitResources>(procedureOwner);
-                        ChangeState<ProcedureUpdateVersion>(procedureOwner);
+                        ChangeState<ProcedureInitResources>(procedureOwner);
                     }
                     // 可更新模式。
                     else if (playMode == EPlayMode.HostPlayMode ||
